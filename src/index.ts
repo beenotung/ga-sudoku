@@ -15,12 +15,19 @@ makeTable()
 
 const rootTable = makeTable()
 rootTable.querySelectorAll('td').forEach(td => {
-  const subTable = makeTable(`<input type="text" maxlength="1"/>`)
-  subTable.querySelectorAll('input').forEach(e => {
-    e.addEventListener('mouseover', () => {
-      e.focus()
-      if (e.value !== '') {
-        e.select()
+  const subTable = makeTable(
+    `<input type="text" maxlength="1" pattern="[1-9]"/>`,
+  )
+  subTable.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', () => {
+      if (!input.value.match(/[1-9]/)) {
+        input.value = ''
+      }
+    })
+    input.addEventListener('mouseover', () => {
+      input.focus()
+      if (input.value !== '') {
+        input.select()
       }
     })
   })
