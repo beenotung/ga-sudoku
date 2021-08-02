@@ -102,6 +102,28 @@ const INDEX_MAP: Pos2D[] = []
   }
 }
 
+// x -> index
+const X_INDEX_LIST: number[][] = []
+INDEX_MAP.forEach(({ x }, index) => {
+  let index_list = X_INDEX_LIST[x]
+  if (!index_list) {
+    index_list = []
+    X_INDEX_LIST[x] = index_list
+  }
+  index_list.push(index)
+})
+
+// y -> index
+const Y_INDEX_LIST: number[][] = []
+INDEX_MAP.forEach(({ y }, index) => {
+  let index_list = Y_INDEX_LIST[y]
+  if (!index_list) {
+    index_list = []
+    Y_INDEX_LIST[y] = index_list
+  }
+  index_list.push(index)
+})
+
 function calcFitness(numberList: string[]): number {
   let score = 0
 
@@ -122,11 +144,6 @@ function calcFitness(numberList: string[]): number {
       if (!value) continue
       if (numberSet.has(value)) {
         score += SCORES.DUPLICATE
-        // console.debug({
-        //   grid,
-        //   index,
-        //   value,
-        // })
       }
       numberSet.add(value)
     }
@@ -135,34 +152,25 @@ function calcFitness(numberList: string[]): number {
   // check each X
   for (let x = 0; x < 9; x++) {
     const numberSet = new Set<string>()
-    for (let index = 0; index < 81; index++) {
+    X_INDEX_LIST[x].forEach(index => {
       const value = numberList[index]
-      if (!value) continue
-      if (INDEX_MAP[index].x !== x) continue
+      if (!value) return
       if (numberSet.has(value)) {
         score += SCORES.DUPLICATE
-        // console.debug({
-        //   x,
-        //   index,
-        //   value,
-        // })
       }
-      numberSet.add(value)
-    }
+    })
   }
 
   // check each Y
   for (let y = 0; y < 9; y++) {
     const numberSet = new Set<string>()
-    for (let index = 0; index < 81; index++) {
+    Y_INDEX_LIST[y].forEach(index => {
       const value = numberList[index]
-      if (!value) continue
-      if (INDEX_MAP[index].y !== y) continue
+      if (!value) return
       if (numberSet.has(value)) {
         score += SCORES.DUPLICATE
       }
-      numberSet.add(value)
-    }
+    })
   }
 
   return score
