@@ -77,7 +77,10 @@ init()
  *  */
 
 const SCORES = {
-  DUPLICATE: -10,
+  WRONG: -729,
+  DUPLICATE: -81,
+  FILL: 1,
+  BEST: 81,
 }
 
 type Pos2D = {
@@ -99,8 +102,15 @@ const INDEX_MAP: Pos2D[] = []
   }
 }
 
-function calcInvalidMoves(numberList: string[]): number {
+function calcFitness(numberList: string[]): number {
   let score = 0
+
+  // check fill
+  for (let index = 0; index < 81; index++) {
+    if (numberList[index]) {
+      score += SCORES.FILL
+    }
+  }
 
   // check each Grid
   let index = -1
@@ -112,6 +122,11 @@ function calcInvalidMoves(numberList: string[]): number {
       if (!value) continue
       if (numberSet.has(value)) {
         score += SCORES.DUPLICATE
+        // console.debug({
+        //   grid,
+        //   index,
+        //   value,
+        // })
       }
       numberSet.add(value)
     }
@@ -126,6 +141,11 @@ function calcInvalidMoves(numberList: string[]): number {
       if (INDEX_MAP[index].x !== x) continue
       if (numberSet.has(value)) {
         score += SCORES.DUPLICATE
+        // console.debug({
+        //   x,
+        //   index,
+        //   value,
+        // })
       }
       numberSet.add(value)
     }
@@ -148,15 +168,56 @@ function calcInvalidMoves(numberList: string[]): number {
   return score
 }
 
-function test() {
+function checkBoard() {
   const numberList = getNumberList()
-  const score = calcInvalidMoves(numberList)
+  const score = calcFitness(numberList)
   console.debug('score:', score)
 }
 
 function solveBoard() {
   console.debug('TODO')
-  test()
+  const questionNumberList = getNumberList()
+  const inputList: HTMLInputElement[] = main.querySelectorAll(
+    'table input',
+  ) as any
+
+  function tryOnce() {
+    // reset to question state
+    for (let index = 0; index < 81; index++) {
+      inputList[index].value = questionNumberList[index] || ''
+    }
+
+    for (let i = 0; i < 81; i++) {
+      const index = Math.floor(Math.random() * 81)
+      const input = inputList[index]
+      if (input.value) continue
+      const oldList = getNumberList()
+      const oldScore = calcFitness(oldList)
+      for (let valueNum = 0; valueNum < 9; valueNum++) {
+        const valueStr = Math.floor(Math.random() * 9 + 1).toString()
+        // const valueStr = (valueNum+1).toString()
+        const newList = oldList.slice()
+        newList[index] = valueStr
+        const newScore = calcFitness(newList)
+        if (newScore < oldScore) continue
+        input.value = valueStr
+        // console.debug({
+        //   newScore,
+        //   fill: newList.filter(x => x).length,
+        // })
+        break
+      }
+    }
+    const numberList = getNumberList()
+    const score = calcFitness(numberList)
+    console.debug('score:', score)
+    if (score === SCORES.BEST) {
+      return
+    }
+    setTimeout(tryOnce, 50)
+  }
+
+  tryOnce()
 }
 
-Object.assign(window, { solveBoard })
+Object.assign(window, { solveBoard, checkBoard })
